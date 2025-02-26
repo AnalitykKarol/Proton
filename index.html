@@ -49,7 +49,7 @@
       // Przygotuj dane do wysłania
       const dane = { id: id, button: button };
 
-      // Ustaw początkowy komunikat
+      // Ustaw początkowy komunikat zależnie od "button"
       const messageEl = document.getElementById('message');
       if (button === 'won') {
         messageEl.textContent = "Proszę czekać, nastąpi przekierowanie do Baselinker...";
@@ -64,7 +64,6 @@
         body: JSON.stringify(dane)
       })
       .then(response => {
-        // Jeśli status 200
         if (response.status === 200) {
           return response.text().then(text => text ? JSON.parse(text) : {});
         } else {
@@ -73,17 +72,23 @@
       })
       .then(data => {
         if (button === 'won') {
-          // Dla "won", jeśli mamy URL, przekieruj
+          // Jeśli "won", sprawdź czy odpowiedź zawiera "url" i przekieruj
           if (data.url) {
             window.location.href = data.url;
           } else {
+            console.error('Brak URL w odpowiedzi');
             messageEl.textContent = "Błąd: brak URL w odpowiedzi.";
           }
         } else if (button === 'lost') {
-          // Dla "lost" - status 200 już zapewniamy, więc wyświetlamy komunikat i zamykamy stronę
-          setTimeout(() => {
-            window.close();
-          }, 2000);
+          // Jeśli "lost", oczekujemy { "done": "true" } w odpowiedzi
+          if (data.done === "true") {
+            setTimeout(() => {
+              window.close();
+            }, 500);
+          } else {
+            console.error('Nieprawidłowa odpowiedź dla lost');
+            messageEl.textContent = "Błąd: nieprawidłowa odpowiedź serwera.";
+          }
         }
       })
       .catch(err => {
