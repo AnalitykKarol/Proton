@@ -32,7 +32,7 @@
   </style>
 </head>
 <body>
-  <div style="text-align: center; margin-top: 100px;">
+  <div id="content" style="text-align: center; margin-top: 100px;">
     <p>Proszę chwilę poczekać...</p>
     <div class="spinner">
       <div class="double-bounce1"></div>
@@ -41,23 +41,42 @@
   </div>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
+      // Pobierz parametry "id" i "button" z URL
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      if (!id) return;
+      const button = params.get('button'); // oczekiwane wartości: "won" lub "lost"
+
+      // Przygotuj dane do wysłania
+      const dane = { id: id, button: button };
+
+      // Wyślij webhook do Make
       fetch('https://hook.eu2.make.com/j29q9u2gfukabwl8m9qnledp02i9c7fp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: id })
+        body: JSON.stringify(dane)
       })
       .then(response => response.json())
       .then(data => {
-        if (data.url) {
-          window.location.href = data.url;
-        } else {
-          console.error('Brak URL w odpowiedzi');
+        if (button === 'won') {
+          // Jeśli "won", sprawdź czy odpowiedź zawiera "url" i przekieruj
+          if (data.url) {
+            window.location.href = data.url;
+          } else {
+            console.error('Brak URL w odpowiedzi');
+          }
+        } else if (button === 'lost') {
+          // Jeśli "lost", wyświetl komunikat i spróbuj zamknąć stronę
+          document.getElementById('content').innerHTML = '<p>Zamówienie oznaczone jako stracone.</p>';
+          // Po 2 sekundach spróbuj zamknąć stronę
+          setTimeout(() => {
+            window.close();
+          }, 2000);
         }
       })
-      .catch(err => console.error('Błąd wywołania webhooka:', err));
+      .catch(err => {
+        console.error('Błąd wywołania webhooka:', err);
+        document.getElementById('content').innerHTML = '<p>Wystąpił błąd. Spróbuj ponownie później.</p>';
+      });
     });
   </script>
 </body>
