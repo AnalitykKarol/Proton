@@ -44,12 +44,12 @@
       // Pobierz parametry "id" i "button" z URL
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
-      const button = params.get('button'); // oczekiwane wartości: "won" lub "lost"
+      const button = params.get('button'); // oczekiwane: "won" lub "lost"
 
       // Przygotuj dane do wysłania
       const dane = { id: id, button: button };
 
-      // Ustaw początkowy komunikat zależnie od button
+      // Ustaw początkowy komunikat
       const messageEl = document.getElementById('message');
       if (button === 'won') {
         messageEl.textContent = "Proszę czekać, nastąpi przekierowanie do Baselinker...";
@@ -63,17 +63,24 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(dane)
       })
-      .then(response => response.json())
+      .then(response => {
+        // Jeśli status 200
+        if (response.status === 200) {
+          return response.text().then(text => text ? JSON.parse(text) : {});
+        } else {
+          throw new Error("Błąd sieciowy: " + response.status);
+        }
+      })
       .then(data => {
         if (button === 'won') {
-          // Jeśli "won", sprawdź czy odpowiedź zawiera "url" i przekieruj
+          // Dla "won", jeśli mamy URL, przekieruj
           if (data.url) {
             window.location.href = data.url;
           } else {
-            console.error('Brak URL w odpowiedzi');
+            messageEl.textContent = "Błąd: brak URL w odpowiedzi.";
           }
         } else if (button === 'lost') {
-          // Jeśli "lost", po 2 sekundach spróbuj zamknąć stronę
+          // Dla "lost" - status 200 już zapewniamy, więc wyświetlamy komunikat i zamykamy stronę
           setTimeout(() => {
             window.close();
           }, 2000);
