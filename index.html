@@ -33,7 +33,7 @@
 </head>
 <body>
   <div id="content" style="text-align: center; margin-top: 100px;">
-    <p>Proszę chwilę poczekać...</p>
+    <p id="message">Proszę chwilę poczekać...</p>
     <div class="spinner">
       <div class="double-bounce1"></div>
       <div class="double-bounce2"></div>
@@ -48,6 +48,14 @@
 
       // Przygotuj dane do wysłania
       const dane = { id: id, button: button };
+
+      // Ustaw początkowy komunikat zależnie od button
+      const messageEl = document.getElementById('message');
+      if (button === 'won') {
+        messageEl.textContent = "Proszę czekać, nastąpi przekierowanie do Baselinker...";
+      } else if (button === 'lost') {
+        messageEl.textContent = "Proszę czekać, zamówienie zostaje oznaczone jako stracone...";
+      }
 
       // Wyślij webhook do Make
       fetch('https://hook.eu2.make.com/j29q9u2gfukabwl8m9qnledp02i9c7fp', {
@@ -65,9 +73,7 @@
             console.error('Brak URL w odpowiedzi');
           }
         } else if (button === 'lost') {
-          // Jeśli "lost", wyświetl komunikat i spróbuj zamknąć stronę
-          document.getElementById('content').innerHTML = '<p>Zamówienie oznaczone jako stracone.</p>';
-          // Po 2 sekundach spróbuj zamknąć stronę
+          // Jeśli "lost", po 2 sekundach spróbuj zamknąć stronę
           setTimeout(() => {
             window.close();
           }, 2000);
@@ -75,7 +81,7 @@
       })
       .catch(err => {
         console.error('Błąd wywołania webhooka:', err);
-        document.getElementById('content').innerHTML = '<p>Wystąpił błąd. Spróbuj ponownie później.</p>';
+        messageEl.textContent = "Wystąpił błąd. Spróbuj ponownie później.";
       });
     });
   </script>
