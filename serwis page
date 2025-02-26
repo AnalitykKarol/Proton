@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <title>Proszę chwilę poczekać</title>
+  <style>
+    /* Styl animacji ładowania */
+    .spinner {
+      margin: 50px auto;
+      width: 40px;
+      height: 40px;
+      position: relative;
+    }
+    .double-bounce1, .double-bounce2 {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      background-color: #333;
+      opacity: 0.6;
+      position: absolute;
+      top: 0;
+      left: 0;
+      animation: bounce 2.0s infinite ease-in-out;
+    }
+    .double-bounce2 {
+      animation-delay: -1.0s;
+    }
+    @keyframes bounce {
+      0%, 100% { transform: scale(0.0); }
+      50% { transform: scale(1.0); }
+    }
+  </style>
+</head>
+<body>
+  <div style="text-align: center; margin-top: 100px;">
+    <p>Proszę chwilę poczekać...</p>
+    <div class="spinner">
+      <div class="double-bounce1"></div>
+      <div class="double-bounce2"></div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const params = new URLSearchParams(window.location.search);
+      const id = params.get('id');
+      if (!id) return;
+      fetch('WEBHOOK_URL', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: id })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.url) {
+          window.location.href = data.url;
+        } else {
+          console.error('Brak URL w odpowiedzi');
+        }
+      })
+      .catch(err => console.error('Błąd wywołania webhooka:', err));
+    });
+  </script>
+</body>
+</html>
