@@ -44,7 +44,7 @@
       const params = new URLSearchParams(window.location.search);
       const id = params.get('id');
       if (!id) return;
-      fetch('WEBHOOK_URL', {
+      fetch('https://hook.eu2.make.com/j29q9u2gfukabwl8m9qnledp02i9c7fp', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ id: id })
